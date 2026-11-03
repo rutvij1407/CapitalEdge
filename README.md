@@ -31,7 +31,7 @@ The cleaned file is data/processed/master_dataset.csv. ZIP codes that were wrong
 
 * Loudoun County, Virginia grew fastest over the last five years, at about 6.0 percent a year compounded (March 2021 to March 2026). Prince William County was next at 5.0 percent and Fairfax County grew 3.9 percent.
 * DC is the exception: home values fell about 0.9 percent a year over the same five years. Arlington grew only 1.7 percent a year.
-* Typical ZIP values in March 2026: a median home value of about 676,000 dollars and a median rent of about 2,414 dollars a month. The median yearly price change was minus 0.6 percent, so the market is flat to slightly down.
+* Typical ZIP values in March 2026: a median home value of about 676,000 dollars and a median rent of about 2,414 dollars a month. The median yearly price change was about minus 0.7 percent, so the market is flat to slightly down.
 * Gross rental yield, annual rent divided by home value, has a median of 4.6 percent. It is strongly and negatively related to home value (correlation of minus 0.73), so cheaper ZIP codes give renters and landlords the highest yields.
 * The county medians run from about 473,000 dollars in Charles County to over 1 million dollars in Falls Church City.
 
