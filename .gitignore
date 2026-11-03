@@ -3,8 +3,12 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.vercel/
+.claude/
 data/raw/
-data/processed/
+data/processed/*
+!data/processed/master_dataset.csv
+!data/processed/mortgage_rates.csv
 *.ipynb_checkpoints/
 .DS_Store
 *.egg-info/

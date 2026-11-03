@@ -1,138 +1,70 @@
-# CapitalEdge 🏛️
-### DMV Real Estate Intelligence Platform
+**CapitalEdge: DC Metro Housing Market Dashboard**
 
-> Interactive analytics dashboard for the Washington DC metropolitan area housing market — combining Zillow home values, US Census demographics, and crime statistics across 200+ ZIP codes to surface market trends, undervalued neighbourhoods, and investment opportunities.
+An interactive dashboard that tracks 26 years of home values across 191 ZIP codes in Washington DC, Maryland and Virginia.
 
----
+Live dashboard: https://capitaledge-one.vercel.app
 
-## Key Findings
+![Market overview](docs/screenshots/market_overview.png)
 
-1. **Loudoun County** shows the highest 5-year appreciation in the DMV, averaging ~8% YoY
-2. **Household income is the strongest predictor** of home values (Pearson r ≈ 0.78), outweighing crime and age of housing stock
-3. **15+ ZIP codes** identified as statistically undervalued based on Random Forest predictions vs. current market prices
-4. **Price-to-income ratios** vary from 4× (outer suburbs) to 12× (DC core), signalling stark affordability gaps across the metro
+**The problem**
 
----
+Home prices in the DC metro area move very differently from one county to the next. Zillow publishes the numbers, but not in a form that lets you compare neighbourhoods, see long term trends or spot where prices are rising or falling. CapitalEdge turns the raw monthly data into one dashboard.
 
-## Tech Stack
+**The data**
 
-| Layer | Tools |
-|---|---|
-| Data ingestion | Python · Requests · Zillow ZHVI · Census API · DC Open Data |
-| Storage | PostgreSQL · SQLAlchemy |
-| Analysis | Pandas · NumPy · SciPy · Scikit-learn |
-| Dashboard | Streamlit · Plotly |
-| Deployment | Streamlit Cloud |
+* Zillow Home Value Index by ZIP code, monthly from January 2000 to March 2026.
+* Zillow rent values by ZIP code, available for 128 of the 191 ZIP codes.
+* 30 year mortgage rates from FRED, the St. Louis Fed data service.
+* Coverage: 10 counties and cities across DC, Maryland and Virginia, 57,335 monthly records.
 
----
+The cleaned file is data/processed/master_dataset.csv. ZIP codes that were wrongly matched to Montgomery County in southwest Virginia were removed, because they are not part of the DC metro area.
 
-## Project Structure
+**What the dashboard shows**
 
-```
-CapitalEdge/
-├── src/
-│   ├── config.py            # Env vars, paths, FIPS codes
-│   ├── data_ingestion.py    # Download Zillow, Census, crime data
-│   ├── load_data.py         # Insert CSVs into PostgreSQL
-│   ├── cleaning.py          # Validate, clean, build master_dataset.csv
-│   ├── analysis.py          # ML models, hypothesis tests, undervalued ZIPs
-│   └── app.py               # Streamlit dashboard (5 pages)
-├── sql/
-│   ├── schema.sql           # PostgreSQL table & view definitions
-│   └── queries.sql          # 10 analytical queries (window fns, CTEs, percentiles)
-├── notebooks/               # EDA notebooks
-├── data/
-│   ├── raw/                 # Downloaded source files (git-ignored)
-│   └── processed/           # Cleaned CSVs fed into the app
-├── models/                  # Saved best_model.pkl
-├── .streamlit/config.toml   # Streamlit theme
-├── .env.example             # Environment variable template
-└── requirements.txt
-```
+* Market Overview: median home value, yearly change, ZIP count, median rent, 26 year history by state, a county comparison and the spread of values by state.
+* Market Pulse: mortgage rates and price momentum for context.
+* Neighborhood Compare: any two ZIP codes side by side. Income, population and crime rows stay blank until Census data is added.
+* Data Explorer: a searchable table of the full dataset.
+* Price Predictor and Hidden Gems: planned pages. They need Census income and crime data and a trained model, which this version does not include yet.
 
----
+**Findings from the data**
 
-## Quick Start
+* Loudoun County, Virginia grew fastest over the last five years, at about 6.0 percent a year compounded (March 2021 to March 2026). Prince William County was next at 5.0 percent and Fairfax County grew 3.9 percent.
+* DC is the exception: home values fell about 0.9 percent a year over the same five years. Arlington grew only 1.7 percent a year.
+* Typical ZIP values in March 2026: a median home value of about 676,000 dollars and a median rent of about 2,414 dollars a month. The median yearly price change was minus 0.6 percent, so the market is flat to slightly down.
+* Gross rental yield, annual rent divided by home value, has a median of 4.6 percent. It is strongly and negatively related to home value (correlation of minus 0.73), so cheaper ZIP codes give renters and landlords the highest yields.
+* The county medians run from about 473,000 dollars in Charles County to over 1 million dollars in Falls Church City.
 
-### 1. Clone & install
+![Full overview](docs/screenshots/market_overview_full.png)
 
-```bash
-git clone https://github.com/<you>/capitaledge.git
-cd capitaledge
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-```
+**Tech stack**
 
-### 2. Configure environment
+Python, Dash, Plotly, pandas, scikit learn and Flask, deployed on Vercel from this repository.
 
-```bash
-cp .env.example .env
-# Fill in DB_PASSWORD and CENSUS_API_KEY
-# Get a free Census key at: https://api.census.gov/data/key_signup.html
-```
+**Run it locally**
 
-### 3. Set up PostgreSQL
+1. Create a virtual environment and install the packages in requirements.txt.
+2. Run python src/app.py.
+3. Open localhost on port 8050.
 
-```bash
-psql -U postgres -c "CREATE DATABASE capitaledge;"
-psql -U postgres -c "CREATE USER analyst WITH PASSWORD 'yourpassword';"
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE capitaledge TO analyst;"
-```
+**Repository layout**
 
-### 4. Run the pipeline
+* app.py: the entry point Vercel uses
+* src/app.py: the dashboard
+* src/assets: the stylesheet
+* data/processed: the two data files the app needs
+* src/data_ingestion.py, load_data.py, cleaning.py and analysis.py: the full data pipeline, which uses PostgreSQL and a free Census API key
+* sql: the schema and analysis queries
+* requirements_pipeline.txt: extra packages for the pipeline
 
-```bash
-# Step 1 — download & filter data
-python src/data_ingestion.py
+**Roadmap**
 
-# Step 2 — load into PostgreSQL
-python src/load_data.py
+1. Add Census income, population and crime data.
+2. Train a price model and use it to switch on Price Predictor and Hidden Gems.
+3. Add EDA notebooks.
 
-# Step 3 — clean & build master CSV
-python src/cleaning.py
+**Author**
 
-# Step 4 — train models & find undervalued ZIPs
-python src/analysis.py
-
-# Step 5 — launch dashboard
-streamlit run src/app.py
-```
-
----
-
-## Dashboard Pages
-
-| Page | Description |
-|---|---|
-| 📊 Market Overview | KPIs, state trends, county bar chart, geographic heat map, correlation matrix |
-| 🔎 Neighborhood Compare | Side-by-side metrics, price trend, normalised radar chart for any two ZIP codes |
-| 🤖 Price Predictor | Random Forest model — enter neighbourhood stats, get predicted value + 80% interval |
-| 💎 Hidden Gems | Top undervalued ZIP codes ranked by model-predicted upside |
-| 🗃️ Data Explorer | Searchable, filterable, downloadable full dataset |
-
----
-
-## Data Sources
-
-| Source | Data | URL |
-|---|---|---|
-| Zillow Research | ZHVI monthly home values by ZIP | [files.zillowstatic.com](https://www.zillow.com/research/data/) |
-| US Census Bureau | ACS 5-year demographics | [api.census.gov](https://api.census.gov) |
-| DC Open Data | MPD crime incidents | [opendata.dc.gov](https://opendata.dc.gov) |
-| data.virginia.gov | Virginia crime statistics | [data.virginia.gov](https://data.virginia.gov) |
-
----
-
-## Deployment (Streamlit Cloud)
-
-1. Push repo to GitHub (ensure `data/processed/master_dataset.csv` is committed, or use a public data URL)
-2. Go to [share.streamlit.io](https://share.streamlit.io) → New app
-3. Select repo, branch, `src/app.py`
-4. Add secrets: `DB_PASSWORD`, `CENSUS_API_KEY`
-5. Deploy
-
----
-
-## Author
-
-Built by Rutvij Reddy Vakatiruty · [LinkedIn](https://linkedin.com) · [GitHub](https://github.com)
+Rutvij Reddy Vakati, MS in Data Analytics Engineering, George Mason University.
+LinkedIn: https://linkedin.com/in/vakati-rutvij-1167rutvij
+GitHub: https://github.com/rutvij1407
